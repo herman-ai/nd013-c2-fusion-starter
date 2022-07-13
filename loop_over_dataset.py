@@ -53,7 +53,7 @@ import misc.params as params
 data_filename = 'training_segment-1005081002024129653_5313_150_5333_150_with_camera_labels.tfrecord' # Sequence 1
 # data_filename = 'training_segment-10072231702153043603_5725_000_5745_000_with_camera_labels.tfrecord' # Sequence 2
 # data_filename = 'training_segment-10963653239323173269_1924_000_1944_000_with_camera_labels.tfrecord' # Sequence 3
-show_only_frames = [0, 200] # show only frames in interval for debugging
+show_only_frames = [0, 0] # show only frames in interval for debugging
 
 ## Prepare Waymo Open Dataset file for loading
 data_fullpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dataset', data_filename) # adjustable path in case this script is called from another working directory
@@ -62,7 +62,7 @@ datafile = WaymoDataFileReader(data_fullpath)
 datafile_iter = iter(datafile)  # initialize dataset iterator
 
 ## Initialize object detection
-configs_det = det.load_configs(model_name='fpn_resnet') # options are 'darknet', 'fpn_resnet'
+configs_det = det.load_configs(model_name='darknet') # options are 'darknet', 'fpn_resnet', XXX: use fpn_resnet for the project
 model_det = det.create_model(configs_det)
 
 configs_det.use_labels_as_objects = False # True = use groundtruth labels as objects, False = use model-based detection
@@ -81,7 +81,7 @@ np.random.seed(10) # make random values predictable
 ## Selective execution and visualization
 exec_detection = ['bev_from_pcl', 'detect_objects', 'validate_object_labels', 'measure_detection_performance'] # options are 'bev_from_pcl', 'detect_objects', 'validate_object_labels', 'measure_detection_performance'; options not in the list will be loaded from file
 exec_tracking = [] # options are 'perform_tracking'
-exec_visualization = [] # options are 'show_range_image', 'show_bev', 'show_pcl', 'show_labels_in_image', 'show_objects_and_labels_in_bev', 'show_objects_in_bev_labels_in_camera', 'show_tracks', 'show_detection_performance', 'make_tracking_movie'
+exec_visualization = ['show_detection_performance', 'show_range_image'] # options are 'show_range_image', 'show_bev', 'show_pcl', 'show_labels_in_image', 'show_objects_and_labels_in_bev', 'show_objects_in_bev_labels_in_camera', 'show_tracks', 'show_detection_performance', 'make_tracking_movie'
 exec_list = make_exec_list(exec_detection, exec_tracking, exec_visualization)
 vis_pause_time = 0 # set pause time between frames in ms (0 = stop between frames until key is pressed)
 
@@ -96,6 +96,7 @@ np.random.seed(0) # make random values predictable
 if 'show_tracks' in exec_list:    
     fig, (ax2, ax) = plt.subplots(1,2) # init track plot
 
+framenum = 0
 while True:
     try:
         ## Get next frame from Waymo dataset
@@ -121,7 +122,8 @@ while True:
         if 'load_image' in exec_list:
             image = tools.extract_front_camera_image(frame) 
 
-        ## Compute lidar point-cloud from range image    
+        ## Compute lidar point-cloud from range image
+        # import ipdb; ipdb.set_trace() 
         if 'pcl_from_rangeimage' in exec_list:
             print('computing point-cloud from lidar range image')
             lidar_pcl = tools.pcl_from_range_image(frame, lidar_name)
@@ -138,6 +140,7 @@ while True:
             lidar_bev = load_object_from_file(results_fullpath, data_filename, 'lidar_bev', cnt_frame)
 
         ## 3D object detection
+        import ipdb; ipdb.set_trace()
         if (configs_det.use_labels_as_objects==True):
             print('using groundtruth labels as objects')
             detections = tools.convert_labels_into_objects(frame.laser_labels, configs_det)
@@ -164,7 +167,8 @@ while True:
         ## Performance evaluation for object detection
         if 'measure_detection_performance' in exec_list:
             print('measuring detection performance')
-            det_performance = eval.measure_detection_performance(detections, frame.laser_labels, valid_label_flags, configs_det.min_iou)     
+            # det_performance = eval.measure_detection_performance(detections, frame.laser_labels, valid_label_flags, configs_det.min_iou)     
+            det_performance = eval.measure_detection_performance(detections, frame.laser_labels, valid_label_flags)  # Commented out the above lined because the config object does not have min_iou     
         else:
             print('loading detection performance measures from file')
             # load different data for final project vs. mid-term project
@@ -269,6 +273,7 @@ while True:
         # if StopIteration is raised, break from loop
         print("StopIteration has been raised\n")
         break
+    framenum += 1
 
 
 #################################
@@ -276,7 +281,8 @@ while True:
 
 ## Evaluate object detection performance
 if 'show_detection_performance' in exec_list:
-    eval.compute_performance_stats(det_performance_all, configs_det)
+    # eval.compute_performance_stats(det_performance_all, configs_det)
+    eval.compute_performance_stats(det_performance_all)
 
 ## Plot RMSE for all tracks
 if 'show_tracks' in exec_list:

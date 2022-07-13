@@ -177,7 +177,8 @@ def detect_objects(input_bev_maps, model, configs):
     #######
     # Extract 3d bounding boxes from model response
     print("student task ID_S3_EX2")
-    objects = [] 
+    import ipdb; ipdb.set_trace()
+    objects = []
 
     ## step 1 : check whether there are any detections
 
