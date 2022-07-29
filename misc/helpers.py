@@ -30,10 +30,10 @@ def load_object_from_file(file_path, base_filename, object_name, frame_id=1):
         return object
     
 ## Prepares an exec_list with all tasks to be executed
-def make_exec_list(exec_detection, exec_tracking, exec_visualization): 
+def make_exec_list(exec_data, exec_detection, exec_tracking, exec_visualization): 
     
     # save all tasks in exec_list
-    exec_list = exec_detection + exec_tracking + exec_visualization
+    exec_list = exec_data + exec_detection + exec_tracking + exec_visualization
     
     # check if we need pcl
     if any(i in exec_list for i in ('validate_object_labels', 'bev_from_pcl')):

@@ -12,9 +12,11 @@
 
 # general package imports
 import numpy as np
-import matplotlib
-matplotlib.use('wxagg') # change backend so that figure maximizing works on Mac as well     
+# import matplotlib
+# matplotlib.use("TkAgg")
+# matplotlib.use('wxagg') # change backend so that figure maximizing works on Mac as well     
 import matplotlib.pyplot as plt
+
 
 import torch
 from shapely.geometry import Polygon
@@ -33,7 +35,6 @@ import misc.objdet_tools as tools
 
 # compute various performance measures to assess object detection
 def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5):
-    
      # find best detection for each valid label 
     true_positives = 0 # no. of correctly detected objects
     center_devs = []
@@ -67,7 +68,6 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
                 dist_x = abs(_x-label_box.center_x)
                 dist_y = abs(_y-label_box.center_y)
                 dist_z = abs(_z-label_box.center_z)
-                # import ipdb; ipdb.set_trace()
                 ## step 5 : compute the intersection over union (IOU) between label and detection bounding-box
                 iou = (Polygon(label_corners).intersection(Polygon(detection_corners)).area 
                             / Polygon(label_corners).union(Polygon(detection_corners)).area)
@@ -82,7 +82,7 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
             
             # find best match and compute metrics
             if matches_lab_det:
-                best_match = max(matches_lab_det,key=itemgetter(0)) # retrieve entry with max iou in case of multiple candidates   
+                best_match = max(matches_lab_det, key=itemgetter(0)) # retrieve entry with max iou in case of multiple candidates   
                 ious.append(best_match[0])
                 center_devs.append(best_match[2:])
                 all_detections[best_match[1]] = 0
@@ -109,6 +109,7 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
     ####### ID_S4_EX2 END #######     
     
     pos_negs = [all_positives, true_positives, false_negatives, int(false_positives)]
+
     det_performance = [ious, center_devs, pos_negs]
     
     return det_performance
@@ -116,7 +117,7 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
 
 # evaluate object detection performance based on all frames
 def compute_performance_stats(det_performance_all):
-
+    
     # extract elements
     ious = []
     center_devs = []
@@ -143,8 +144,8 @@ def compute_performance_stats(det_performance_all):
     recall = true_positives / all_positives
 
     #######    
-    ####### ID_S4_EX3 END #######     
-    print('precision = ' + str(precision) + ", recall = " + str(recall))   
+    ####### ID_S4_EX3 END ####### 
+    print('precision = ' + str(precision) + ", recall = " + str(recall))
 
     # serialize intersection-over-union and deviations in x,y,z
     ious_all = [element for tupl in ious for element in tupl]

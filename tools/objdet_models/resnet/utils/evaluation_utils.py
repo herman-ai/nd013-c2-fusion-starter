@@ -136,5 +136,4 @@ def post_processing(detections, configs):
                 keep_inds = (top_preds[j][:, 0] > configs.conf_thresh)
                 top_preds[j] = top_preds[j][keep_inds]
         ret.append(top_preds)
-
     return ret
