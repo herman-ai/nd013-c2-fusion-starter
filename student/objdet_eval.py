@@ -80,14 +80,13 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
             #######
             ####### ID_S4_EX1 END #######     
             
-            # find best match and compute metrics
+            # find best match for this label and compute metrics
             if matches_lab_det:
                 best_match = max(matches_lab_det, key=itemgetter(0)) # retrieve entry with max iou in case of multiple candidates   
                 ious.append(best_match[0])
                 center_devs.append(best_match[2:])
+                assert all_detections[best_match[1]] == 1, "This detection has already been assigned to another label."
                 all_detections[best_match[1]] = 0
-            else:
-                false_negatives += 1
 
 
     ####### ID_S4_EX2 START #######     
@@ -100,10 +99,11 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
     all_positives = len([label for label, valid in zip(labels, labels_valid) if valid])
 
     ## step 2 : compute the number of false negatives
+    false_negatives = all_positives - true_positives
     
 
     ## step 3 : compute the number of false positives
-    false_positives = all_detections.sum()
+    false_positives = len(detections) - true_positives
     
     #######
     ####### ID_S4_EX2 END #######     
@@ -134,14 +134,14 @@ def compute_performance_stats(det_performance_all):
     ## step 1 : extract the total number of positives, true positives, false negatives and false positives
     all_positives = sum([ap for ap, _, _, _ in pos_negs])
     true_positives = sum([tp for _, tp, _, _ in pos_negs])
-    # false_negatives = sum([fn for _, _, fn, _ in pos_negs])
+    false_negatives = sum([fn for _, _, fn, _ in pos_negs])
     false_positives = sum([fp for _, _, _, fp in pos_negs])
     
     ## step 2 : compute precision
     precision = true_positives / (true_positives + false_positives)
 
     ## step 3 : compute recall 
-    recall = true_positives / all_positives
+    recall = true_positives / (true_positives + false_negatives)
 
     #######    
     ####### ID_S4_EX3 END ####### 
