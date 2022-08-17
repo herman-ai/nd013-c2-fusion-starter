@@ -78,7 +78,7 @@ class Association:
         # - remove corresponding track and measurement from unassigned_tracks and unassigned_meas
         # - return this track and measurement
         ############
-        print(f"Association matrix shape = {self.association_matrix}")
+        print(f"Association matrix shape = {self.association_matrix.shape}")
         if np.min(self.association_matrix) == np.inf:
             return np.nan, np.nan
 
@@ -107,12 +107,11 @@ class Association:
         ############
         # TODO Step 3: return True if measurement lies inside gate, otherwise False
         ############
-        limit = chi2.ppf(params.gating_threshold, df=3)
+        limit = chi2.ppf(params.gating_threshold, df=3 if sensor.name=='lidar' else 2)
         # limit = chi2.ppf(0.995, df=2)
         if MHD < limit:
             return True
         else:
-            print(f"Gating did not hold up for mhd = {MHD}, limit = {limit}")
             return False
         
         ############
@@ -126,13 +125,14 @@ class Association:
         H = meas.sensor.get_H(track.x)
         # hx = meas.sensor.get_hx(track.x)
 
-        S = H * track.P * H.transpose() + meas.R
-        # S = KF.S(track, meas, H)
+        # S = H * track.P * H.transpose() + meas.R
+        S = KF.S(track, meas, H)
         # S = KF.S(track, meas)
         gamma = KF.gamma(track, meas)
         # gamma = meas.z - meas.sensor.get_H(track.x) * track.x
-        # import ipdb; ipdb.set_trace()
-        return np.sqrt((gamma.transpose() * np.linalg.inv(S) * gamma))
+        # if meas.sensor.name == 'camera':
+        #     import ipdb; ipdb.set_trace()
+        return np.sqrt((gamma.transpose() * np.linalg.inv(S) * gamma)[0,0])
         
         ############
         # END student code
@@ -140,6 +140,7 @@ class Association:
     
     def associate_and_update(self, manager, meas_list, KF):
         # associate measurements and tracks
+        # import ipdb; ipdb.set_trace()
         self.associate(manager.track_list, meas_list, KF)
     
         # update associated tracks with measurements
