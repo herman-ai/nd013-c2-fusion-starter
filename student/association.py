@@ -17,6 +17,8 @@ from scipy.stats.distributions import chi2
 # add project directory to python path to enable relative imports
 import os
 import sys
+
+from sklearn.metrics import multilabel_confusion_matrix
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
@@ -39,16 +41,30 @@ class Association:
         ############
         
         # the following only works for at most one track and one measurement
-        self.association_matrix = np.matrix([]) # reset matrix
-        self.unassigned_tracks = [] # reset lists
-        self.unassigned_meas = []
+        N = len(track_list)
+        M = len(meas_list)
+
+        self.association_matrix = np.inf*np.ones((N, M)) # reset matrix
+        for i in range(N):
+            for j in range(M):
+                mhd = self.MHD(track_list[i], meas_list[j], KF)
+                if self.gating(mhd, meas_list[j].sensor):
+                    self.association_matrix[i, j] = mhd
+
+
+        self.unassigned_tracks = list(range(N))
+        self.unassigned_meas = list(range(M))
+        # self.unassigned_tracks = [] # reset lists
+        # self.unassigned_meas = []
+
         
-        if len(meas_list) > 0:
-            self.unassigned_meas = [0]
-        if len(track_list) > 0:
-            self.unassigned_tracks = [0]
-        if len(meas_list) > 0 and len(track_list) > 0: 
-            self.association_matrix = np.matrix([[0]])
+        # if len(meas_list) > 0:
+        #     self.unassigned_meas = [0]
+        # if len(track_list) > 0:
+        #     self.unassigned_tracks = [0]
+
+        # if len(meas_list) > 0 and len(track_list) > 0: 
+        #     self.association_matrix = np.matrix([[0]])
         
         ############
         # END student code
@@ -62,15 +78,25 @@ class Association:
         # - remove corresponding track and measurement from unassigned_tracks and unassigned_meas
         # - return this track and measurement
         ############
+        print(f"Association matrix shape = {self.association_matrix}")
+        if np.min(self.association_matrix) == np.inf:
+            return np.nan, np.nan
+
+        ind_track, ind_meas = np.unravel_index(np.argmin(self.association_matrix, axis=None), 
+                                                self.association_matrix.shape)
+        
 
         # the following only works for at most one track and one measurement
-        update_track = 0
-        update_meas = 0
+        update_track = self.unassigned_tracks[ind_track]
+        update_meas = self.unassigned_meas[ind_meas]
+
         
         # remove from list
         self.unassigned_tracks.remove(update_track) 
         self.unassigned_meas.remove(update_meas)
-        self.association_matrix = np.matrix([])
+
+        self.association_matrix = np.delete(self.association_matrix, ind_track, 0)
+        self.association_matrix = np.delete(self.association_matrix, ind_meas, 1)
             
         ############
         # END student code
@@ -81,8 +107,13 @@ class Association:
         ############
         # TODO Step 3: return True if measurement lies inside gate, otherwise False
         ############
-        
-        pass    
+        limit = chi2.ppf(params.gating_threshold, df=3)
+        # limit = chi2.ppf(0.995, df=2)
+        if MHD < limit:
+            return True
+        else:
+            print(f"Gating did not hold up for mhd = {MHD}, limit = {limit}")
+            return False
         
         ############
         # END student code
@@ -92,8 +123,16 @@ class Association:
         ############
         # TODO Step 3: calculate and return Mahalanobis distance
         ############
-        
-        pass
+        H = meas.sensor.get_H(track.x)
+        # hx = meas.sensor.get_hx(track.x)
+
+        S = H * track.P * H.transpose() + meas.R
+        # S = KF.S(track, meas, H)
+        # S = KF.S(track, meas)
+        gamma = KF.gamma(track, meas)
+        # gamma = meas.z - meas.sensor.get_H(track.x) * track.x
+        # import ipdb; ipdb.set_trace()
+        return np.sqrt((gamma.transpose() * np.linalg.inv(S) * gamma))
         
         ############
         # END student code

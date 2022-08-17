@@ -36,7 +36,7 @@ class Filter:
             [
                 [1, 0, 0, dt, 0, 0],
                 [0, 1, 0, 0, dt, 0],
-                [0, 1, 1, 0, 0, dt],
+                [0, 0, 1, 0, 0, dt],
                 [0, 0, 0, 1, 0, 0],
                 [0, 0, 0, 0, 1, 0],
                 [0, 0, 0, 0, 0, 1]
@@ -122,8 +122,12 @@ class Filter:
         ############
         # TODO Step 1: calculate and return covariance of residual S
         ############
+        # H = meas.sensor.get_H(track.x)
+        hx = meas.sensor.get_hx(track.x)
 
-        return 0
+        S = hx * track.P * hx.transpose() + meas.R
+
+        return S
         
         ############
         # END student code

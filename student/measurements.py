@@ -107,7 +107,7 @@ class Sensor:
                 H[1,2] = self.f_j * (-R[2,2] / (R[0,0]*x[0] + R[0,1]*x[1] + R[0,2]*x[2] + T[0])
                                     + R[0,2] * (R[2,0]*x[0] + R[2,1]*x[1] + R[2,2]*x[2] + T[2]) \
                                         / ((R[0,0]*x[0] + R[0,1]*x[1] + R[0,2]*x[2] + T[0])**2))
-        return H   
+        return H
         
     def generate_measurement(self, num_frame, z, meas_list):
         # generate new measurement from this sensor and add to measurement list
