@@ -49,7 +49,7 @@ class Track:
         #                 [0.0e+00, 0.0e+00, 0.0e+00, 0.0e+00, 2.5e+03, 0.0e+00],
         #                 ([0.0e+00, 0.0e+00, 0.0e+00, 0.0e+00, 0.0e+00, 2.5e+01]])
         self.x = np.zeros((params.dim_state, 1))
-        z = np.zeros((4, 1))
+        z = np.ones((4, 1))
         z[:3, :] = meas.z
         self.x[:3, :] = (meas.sensor.sens_to_veh * z) [:3, :]
 
