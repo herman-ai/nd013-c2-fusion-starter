@@ -80,7 +80,6 @@ class Sensor:
             pos_veh[0:3] = x[0:3]
             pos_sens = self.veh_to_sens*pos_veh # transform from vehicle to lidar coordinates
             pos_sens = pos_sens[:3]
-            # import ipdb; ipdb.set_trace()
             if pos_sens[0, 0] == 0:
                 raise Exception("Divide by zero in hx")
             # image coordinates

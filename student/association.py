@@ -130,8 +130,6 @@ class Association:
         # S = KF.S(track, meas)
         gamma = KF.gamma(track, meas)
         # gamma = meas.z - meas.sensor.get_H(track.x) * track.x
-        # if meas.sensor.name == 'camera':
-        #     import ipdb; ipdb.set_trace()
         return np.sqrt((gamma.transpose() * np.linalg.inv(S) * gamma)[0,0]) + (0 if track.state=='confirmed' else 1)
         
         ############
@@ -140,7 +138,6 @@ class Association:
     
     def associate_and_update(self, manager, meas_list, KF):
         # associate measurements and tracks
-        # import ipdb; ipdb.set_trace()
         self.associate(manager.track_list, meas_list, KF)
     
         # update associated tracks with measurements

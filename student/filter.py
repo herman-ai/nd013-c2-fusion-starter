@@ -76,7 +76,6 @@ class Filter:
         # TODO Step 1: predict state x and estimation error covariance P to next timestep, save x and P in track
         ############
         dt = params.dt
-        # import ipdb; ipdb.set_trace()
         x = self.F() * track.x
         P = self.F() * track.P * self.F().transpose() + self.Q()
         track.set_x(x)
