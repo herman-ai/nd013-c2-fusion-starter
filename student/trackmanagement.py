@@ -122,13 +122,18 @@ class Trackmanagement:
                 if meas_list[0].sensor.in_fov(track.x):
                     # your code goes here
                     track.score = max(track.score - 1/params.window, 0)
+                    # if track.id == 6:
+                    #     import ipdb; ipdb.set_trace()
 
             # delete old tracks
         for track in self.track_list:
+            
             if track.state == "confirmed":
                 if (track.score < params.delete_threshold or 
                     track.P[0,0] > params.max_P or 
                     track.P[1,1] > params.max_P):
+                    # if track.id == 6:
+                    #     import ipdb; ipdb.set_trace()
                     self.delete_track(track)
             else:
                 if (track.P[0,0] > params.max_P or 

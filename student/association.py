@@ -92,7 +92,7 @@ class Association:
 
         
         # remove from list
-        self.unassigned_tracks.remove(update_track) 
+        self.unassigned_tracks.remove(update_track)
         self.unassigned_meas.remove(update_meas)
 
         self.association_matrix = np.delete(self.association_matrix, ind_track, 0)
@@ -100,8 +100,8 @@ class Association:
             
         ############
         # END student code
-        ############ 
-        return update_track, update_meas     
+        ############
+        return update_track, update_meas
 
     def gating(self, MHD, sensor): 
         ############
@@ -132,7 +132,7 @@ class Association:
         # gamma = meas.z - meas.sensor.get_H(track.x) * track.x
         # if meas.sensor.name == 'camera':
         #     import ipdb; ipdb.set_trace()
-        return np.sqrt((gamma.transpose() * np.linalg.inv(S) * gamma)[0,0])
+        return np.sqrt((gamma.transpose() * np.linalg.inv(S) * gamma)[0,0]) + (0 if track.state=='confirmed' else 1)
         
         ############
         # END student code
